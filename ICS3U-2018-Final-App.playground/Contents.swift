@@ -30,8 +30,8 @@ class GameScene: SKScene {
             //run code here after 3 secs
             
             self.splashSceneBackground.removeAllActions()
-            let mainMenuScene = MainMenuScene(size: self.size)
-            self.view?.presentScene(mainMenuScene)
+            let logoScene = LogoScene(size: self.size)
+            self.view?.presentScene(logoScene)
         }
     }
     
@@ -58,6 +58,58 @@ class GameScene: SKScene {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         //
+    }
+}
+
+class LogoScene: SKScene, SKPhysicsContactDelegate {
+    // local variables to this scene
+    let logo = SKSpriteNode(imageNamed: "IMG_4741.JPG")
+    let moveToNextSceneDelay = SKAction.wait(forDuration: 3.0)
+    
+    override func didMove(to view: SKView) {
+        // this is run when the scene loads
+        
+        /* Setup your scene here */
+        self.backgroundColor = SKColor(red: 1.0, green: 1.0, blue:1.0, alpha: 1.0)
+        logo.position = CGPoint(x: frame.midX, y: frame.midY)
+        logo.size = CGSize(width: frame.size.width, height: frame.size.height)
+        logo.name = "Game name"
+        self.addChild(logo)
+        //logo.setScale(0.65)
+        
+        logo.run(moveToNextSceneDelay) {
+            //run code here after 3 secs
+            let mainMenuScene = MainMenuScene(size: self.size)
+            self.view!.presentScene(mainMenuScene)
+        }
+    }
+    
+    override func  update(_ currentTime: TimeInterval) {
+        //
+        
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        //
+        
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // when the start button is touched, it moves to the main game
+        
+        
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        //
+        
+        
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        //
+        
+        
     }
 }
 
