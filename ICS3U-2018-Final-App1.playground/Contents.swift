@@ -14,8 +14,12 @@ class GameScene: SKScene {
     let splashSceneBackground = SKSpriteNode(imageNamed: "splashSceneImage.png")
     let moveToNextSceneDelay = SKAction.wait(forDuration: 3.0)
     
+    
+    
     override func didMove(to view: SKView) {
         // this is run when the scene loads
+        let soundOff : Bool = false
+        UserDefaults().set(soundOff, forKey: "sounds off")
         
         /* Setup your scene here */
         self.backgroundColor = SKColor(red: 0.0, green:0.0, blue:0.0, alpha: 1.0)
@@ -231,8 +235,11 @@ class SoundScene: SKScene {
     let soundOffButton = SKSpriteNode(imageNamed: "soundOffButton.jpg")
     let soundLabel = SKLabelNode(fontNamed: "SavoyeLetPlain")
     
+    var sound : Bool = false
+    
     override func didMove(to view: SKView) {
         // this is run when the scene loads
+        
         
         /* Setup your scene here */
         
@@ -245,22 +252,26 @@ class SoundScene: SKScene {
         soundLabel.fontColor = #colorLiteral(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
         soundLabel.fontSize = 90
         soundLabel.position = CGPoint(x: frame.size.width - 700 , y: (frame.size.height / 2))
+        soundLabel.zPosition = 1.0
         self.addChild(soundLabel)
         
         goBackButton.position = CGPoint(x: frame.size.width - 890 , y: frame.size.height - 50)
         goBackButton.name = "goBack button"
         self.addChild(goBackButton)
         goBackButton.setScale(0.65)
+        goBackButton.zPosition = 2.0
         
         soundOnButton.position = CGPoint(x: frame.size.width - 500 , y: frame.size.height / 2)
         soundOnButton.name = "sound button"
         self.addChild(soundOnButton)
         soundOnButton.setScale(0.70)
+        soundOnButton.zPosition = 3.0
         
         soundOffButton.position = CGPoint(x: frame.size.width - 300 , y: frame.size.height / 2)
         soundOffButton.name = "sound off button"
         self.addChild(soundOffButton)
         soundOffButton.setScale(0.70)
+        soundOffButton.zPosition = 4.0
     }
     
     override func  update(_ currentTime: TimeInterval) {
@@ -284,9 +295,10 @@ class SoundScene: SKScene {
                 let mainMenuScene = MainMenuScene(size: self.size)
                 self.view!.presentScene(mainMenuScene)
             }
-            else if touchedNodeName == "sound off button"{
-                
-                //backgroundSound.run(SKAction.stop(MainGameScene))
+            else if touchedNodeName == "sound off button" {
+                if sound == false {
+                    UserDefaults().set(sound, forKey: "sounds off")
+                }
             }
         }
     }
@@ -437,7 +449,7 @@ class MainGameScene: SKScene, SKPhysicsContactDelegate {
     let scoreLabel = SKLabelNode(fontNamed: "SavoyeLetPlain")
     
     var score : Int = 0
-    var currentFood = true
+    var currentRabbit = true
     
     var foods = [SKSpriteNode]()
     var foodAttackRate: Double = 1
@@ -509,15 +521,20 @@ class MainGameScene: SKScene, SKPhysicsContactDelegate {
     override func  update(_ currentTime: TimeInterval) {
         //
         
-        if rightButtonClicked == true && rabbit.position.x <= (frame.size.width){
-            // move ship to right 
-            var moveRabbitRight = SKAction.moveBy(x: 10, y: 0, duration: 0.1)
-            rabbit.run(moveRabbitRight)
-        }
+        if rightButtonClicked == true {
+            
+            if currentRabbit == true && rabbit.position.x <= (frame.size.width){
+                // move ship to right 
+                var moveRabbitRight = SKAction.moveBy(x: 10, y: 0, duration: 0.1)
+                rabbit.run(moveRabbitRight)
+            }
+        } 
         else if leftButtonClicked == true && rabbit.position.x >= 0 {
-            // move ship to left 
-            var moveRabitLeft = SKAction.moveBy(x: -10, y: 0, duration: 0.1)
-            rabbit.run(moveRabitLeft)
+            if currentRabbit == true  {
+                // move ship to left 
+                var moveRabitLeft = SKAction.moveBy(x: -10, y: 0, duration: 0.1)
+                rabbit.run(moveRabitLeft)
+            }
         }
         
         // create food at random spot
@@ -536,11 +553,12 @@ class MainGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 // Score never be negative and if rabbit miss a pizza, the score would go down 2 points 
                 
-                if currentFood == true {
+                if currentRabbit == true {
                     score -= 2
                     if score < 0 {
                         score = 0
                     }
+                    
                     scoreLabel.text = "Score: " + String(score)
                 }
             }
@@ -553,7 +571,9 @@ class MainGameScene: SKScene, SKPhysicsContactDelegate {
         
         if ((contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask) == (collisionFoodCategory | collisionRabbitCategory)) {
             
-            // remove food after collisions or fall in the ground 
+            // add sound effect on rabbit
+            //http://opengameart.org/users/varkalandar
+            rabbit.run(SKAction.playSoundFileNamed("Coin.wav", waitForCompletion: false))
             contact.bodyB.node?.removeFromParent()
             
             // update score
@@ -562,6 +582,9 @@ class MainGameScene: SKScene, SKPhysicsContactDelegate {
             
             // when score lager than 100, move to the end scene 
             if score > 100 {
+                
+                //remove rabbit off the scene 
+                currentRabbit == false
                 
                 let moveToNextSceneDelay = SKAction.wait(forDuration: 2.0)
                 
